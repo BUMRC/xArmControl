@@ -1,0 +1,35 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 1000  # Increase from 100 to 250 or higher
+    use_sim_time: true
+
+    xarm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+
+xarm_controller:
+  ros__parameters:
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    joints:
+      - limb1_to_base_link
+      - limb2_to_limb1
+      - limb3_to_limb2
+      - limb4_to_limb3
+
+   # state_publish_rate: 100.0 # Defaults to 50
+   #  action_monitor_rate: 100.0 # Defaults to 20
+
+   # allow_partial_joints_goal: false # Defaults to false
+    #hardware_state_has_offset: true
+    # deduce_states_from_derivatives: true
+    
+    # constraints:
+     #  stopped_velocity_tolerance: 0.01 # Defaults to 0.01
+      # goal_time: 0.0 # Defaults to 0.0 (start immediately)

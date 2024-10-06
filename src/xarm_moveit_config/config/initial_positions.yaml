@@ -1,0 +1,8 @@
+# Default initial positions for XArm's ros2_control fake system
+
+initial_positions:
+  xarm_2_joint: 0
+  xarm_3_joint: 0
+  xarm_4_joint: 0
+  xarm_5_joint: 0
+  xarm_6_joint: 0

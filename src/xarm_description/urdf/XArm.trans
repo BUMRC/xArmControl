@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+<robot name="XArm" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+<transmission name="trans_xarm_6_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="xarm_6_joint">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="xarm_6_joint_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <transmission name="trans_xarm_5_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="xarm_5_joint">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="xarm_5_joint_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <transmission name="trans_xarm_4_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="xarm_4_joint">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="xarm_4_joint_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <transmission name="trans_xarm_3_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="xarm_3_joint">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="xarm_3_joint_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <transmission name="trans_xarm_2_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="xarm_2_joint">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="xarm_2_joint_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+
+</robot>
