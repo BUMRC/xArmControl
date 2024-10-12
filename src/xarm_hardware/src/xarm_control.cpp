@@ -6,12 +6,13 @@
 #include <thread>
 #include <chrono>
 #include "rclcpp/rclcpp.hpp"
-#include "xarm_control.hpp"
+#include "xarm_hardware/xarm_control.hpp"
 #define MAX_STR 255
 #define PI 3.14159265359
 
 using std::string;
 namespace xarm_control
+
 {
 	xarm_control::xarm_control()
 	{
@@ -21,21 +22,32 @@ namespace xarm_control
 	void xarm_control::connect()
 	{
 		// Initialize the hidapi library
+		RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Initializing hidapi library \n");
 		if (hid_init())
 			return;
 		int found = 0;
 		printDeviceInformation();
 		devs = hid_enumerate(0x0, 0x0);
 		cur_dev = devs;
+		// log info from cur_dev
+
 		while (cur_dev)
 		{
-
+			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device path: %s\n", cur_dev->path);
+			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device vendor ID: %hx\n", cur_dev->vendor_id);
+			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device product ID: %hx\n", cur_dev->product_id);
+			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device serial number: %ls\n", cur_dev->serial_number);
+			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device manufacturer string: %ls\n", cur_dev->manufacturer_string);
+			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device product string: %ls\n", cur_dev->product_string);
+			if (cur_dev->product_string == nullptr){
+				cur_dev = cur_dev->next;
+				continue;
+			}
 			std::wstring ws(cur_dev->product_string);
 			string product(ws.begin(), ws.end());
-
 			if (product == "xArm")
 			{
-				RCLCPP_INFO(rclcpp::get_logger("xarm_hardware"), "xArm found \n");
+				RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "xArm found \n");
 				found = 1;
 				break;
 			}
@@ -43,7 +55,7 @@ namespace xarm_control
 		}
 		if (found == 0)
 		{
-			RCLCPP_ERROR(rclcpp::get_logger("xarm_hardware"), "xArm not found, make sure it is power on \n");
+			RCLCPP_ERROR(rclcpp::get_logger("XArmSystemHardware"), "xArm not found, make sure it is power on \n");
 			throw std::exception();
 		}
 
@@ -51,10 +63,10 @@ namespace xarm_control
 
 		if (!handle)
 		{
-			RCLCPP_ERROR(rclcpp::get_logger("xarm_hardware"), "unable to open device\n");
+			RCLCPP_ERROR(rclcpp::get_logger("XArmSystemHardware"), "unable to open device\n");
 			throw std::exception();
 		}
-		RCLCPP_INFO(rclcpp::get_logger("xarm_hardware"), "Device opened \n");
+		RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device opened \n");
 		hid_free_enumeration(devs);
 
 		// Dictionary of joint_names to joint_id
@@ -92,6 +104,7 @@ namespace xarm_control
 
 	xarm_control::~xarm_control()
 	{
+		return;
 		hid_close(handle);
 
 		/* Free static HIDAPI objects. */
@@ -100,12 +113,14 @@ namespace xarm_control
 
 	void xarm_control::disconnect()
 	{
+		return;
 		hid_close(handle);
 		hid_exit();
 	}
 
 	void xarm_control::printDeviceInformation()
 	{
+		return;
 		devs = hid_enumerate(0x0, 0x0);
 		cur_dev = devs;
 		while (cur_dev)
@@ -124,6 +139,7 @@ namespace xarm_control
 
 	int xarm_control::convertRadToUnit(std::string joint_name, double rad)
 	{
+		return 0;
 		int unit;
 		double m = (matrix_unit_transform[joint_name][0][1] - matrix_unit_transform[joint_name][0][0]) / (PI);
 		double b = matrix_unit_transform[joint_name][0][1] - (m * PI / 2);
@@ -133,6 +149,7 @@ namespace xarm_control
 
 	double xarm_control::convertUnitToRad(std::string joint_name, int unit)
 	{
+		return 0;
 		double rad;
 		double m = (PI) / (matrix_unit_transform[joint_name][0][1] - matrix_unit_transform[joint_name][0][0]);
 		double b = (PI / 2) - (m * matrix_unit_transform[joint_name][0][1]);
@@ -141,8 +158,16 @@ namespace xarm_control
 	}
 	std::vector<double> xarm_control::readJointsPositions(std::vector<std::string> joint_names)
 	{
-		int res;
+		//dummy return
 		std::vector<double> joint_positions;
+		joint_positions.resize(joint_names.size());
+		for (int i = 0; i < joint_positions.size(); i++)
+		{
+			joint_positions[i] = 0;
+		}	
+		return joint_positions;
+		int res;
+		// std::vector<double> joint_positions;
 		unsigned char buf[65];
 
 		joint_positions.resize(joint_names.size());
@@ -195,6 +220,7 @@ namespace xarm_control
 
 	void xarm_control::setJointPosition(std::string joint_name, double position_rad, int time = 1000)
 	{
+		return;
 		unsigned char buf[65];
 		unsigned char t_lsb, t_msb, p_lsb, p_msb;
 		int res;

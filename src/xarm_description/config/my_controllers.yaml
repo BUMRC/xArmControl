@@ -12,16 +12,19 @@ controller_manager:
 
 xarm_controller:
   ros__parameters:
+    joints:
+      - xarm_6_joint
+      - xarm_5_joint
+      - xarm_4_joint
+      - xarm_3_joint
+      - xarm_2_joint
+
     command_interfaces:
       - position
+
     state_interfaces:
       - position
       - velocity
-    joints:
-      - limb1_to_base_link
-      - limb2_to_limb1
-      - limb3_to_limb2
-      - limb4_to_limb3
 
    # state_publish_rate: 100.0 # Defaults to 50
    #  action_monitor_rate: 100.0 # Defaults to 20

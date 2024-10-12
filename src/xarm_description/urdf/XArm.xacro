@@ -4,7 +4,7 @@
 
 <xacro:include filename="$(find xarm_description)/urdf/materials.xacro" />
 <xacro:include filename="$(find xarm_description)/urdf/XArm.trans" />
-<xacro:include filename="$(find xarm_description)/urdf/XArm.gazebo" />
+<!-- <xacro:include filename="$(find xarm_description)/urdf/XArm.gazebo" /> -->
 <xacro:include filename="$(find xarm_description)/urdf/ros2_control.xacro" />
 
  <link name="xarm_base_link">
@@ -177,5 +177,5 @@
         <parent link="xarm_3_link" />
         <child link="xarm_2_link" />
     </joint>
-
+<xacro:XArm name="XArmHardware" prefix=""/>
 </robot>

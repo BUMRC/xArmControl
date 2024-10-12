@@ -37,17 +37,6 @@ namespace xarm_hardware
     class XArmSystemHardware : public hardware_interface::SystemInterface
     {
 
-        struct Config
-        {
-            std::vector<std::string> joint_names = {};
-
-            float loop_rate = 0.0;
-            std::string device = "";
-            int baud_rate = 0; // check if need for hid communication
-            int timeout_ms = 0;
-            int enc_counts_per_rev = 0; // check actual servos and what they output
-        };
-
     public:
         RCLCPP_SHARED_PTR_DEFINITIONS(XArmSystemHardware);
 
@@ -82,9 +71,9 @@ namespace xarm_hardware
 
         // todo: add a communication class to handle hid device communication
         xarm_control::xarm_control xarm_control_;
-        Config cfg_;
         std::vector<Joint> joints;
-
+        double hw_start_sec_;
+        double hw_stop_sec_;
     };
 
 } // namespace xarm_hardware

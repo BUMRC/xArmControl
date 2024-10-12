@@ -18,15 +18,14 @@ namespace xarm_hardware
         double pos = 0.0;            // radians
         double vel = 0.0;            // rad/s
 
-        Joint(const std::string &joint_name, int counts_per_rev)
+        Joint(const std::string &joint_name)
         {
-            setup(joint_name, counts_per_rev);
+            setup(joint_name);
         }
 
-        void setup(const std::string &joint_name, int counts_per_rev)
+        void setup(const std::string &joint_name)
         {
             name = joint_name;
-            counts_per_rev = counts_per_rev;
         }
     };
 }
