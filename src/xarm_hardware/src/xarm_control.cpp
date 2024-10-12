@@ -24,25 +24,30 @@ namespace xarm_control
 		// Initialize the hidapi library
 		RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Initializing hidapi library \n");
 		if (hid_init())
+		{
+			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Failed to initialize hidapi library \n");
 			return;
+		}
 
-		const unsigned short XARM_VENDOR_ID = 0x1234;  // Example vendor ID
-		const unsigned short XARM_PRODUCT_ID = 0x5678; // Example product ID
+		const unsigned short XARM_VENDOR_ID = 0x483;  // Example vendor ID
+		const unsigned short XARM_PRODUCT_ID = 0x5750; // Example product ID
 
 		int found = 0;
 		printDeviceInformation();
-		devs = hid_enumerate(XARM_VENDOR_ID, XARM_PRODUCT_ID);
+		devs = hid_enumerate(0x0, 0x0);
 		cur_dev = devs;
 		// log info from cur_dev
 
 		while (cur_dev)
 		{
+
 			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device path: %s\n", cur_dev->path);
 			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device vendor ID: %hx\n", cur_dev->vendor_id);
 			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device product ID: %hx\n", cur_dev->product_id);
 
 			if (cur_dev->vendor_id == XARM_VENDOR_ID && cur_dev->product_id == XARM_PRODUCT_ID)
 			{
+
 				RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "xArm found \n");
 				found = 1;
 				break;
