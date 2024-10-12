@@ -25,9 +25,13 @@ namespace xarm_control
 		RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Initializing hidapi library \n");
 		if (hid_init())
 			return;
+
+		const unsigned short XARM_VENDOR_ID = 0x1234;  // Example vendor ID
+		const unsigned short XARM_PRODUCT_ID = 0x5678; // Example product ID
+
 		int found = 0;
 		printDeviceInformation();
-		devs = hid_enumerate(0x0, 0x0);
+		devs = hid_enumerate(XARM_VENDOR_ID, XARM_PRODUCT_ID);
 		cur_dev = devs;
 		// log info from cur_dev
 
@@ -36,16 +40,8 @@ namespace xarm_control
 			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device path: %s\n", cur_dev->path);
 			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device vendor ID: %hx\n", cur_dev->vendor_id);
 			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device product ID: %hx\n", cur_dev->product_id);
-			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device serial number: %ls\n", cur_dev->serial_number);
-			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device manufacturer string: %ls\n", cur_dev->manufacturer_string);
-			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device product string: %ls\n", cur_dev->product_string);
-			if (cur_dev->product_string == nullptr){
-				cur_dev = cur_dev->next;
-				continue;
-			}
-			std::wstring ws(cur_dev->product_string);
-			string product(ws.begin(), ws.end());
-			if (product == "xArm")
+
+			if (cur_dev->vendor_id == XARM_VENDOR_ID && cur_dev->product_id == XARM_PRODUCT_ID)
 			{
 				RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "xArm found \n");
 				found = 1;
@@ -158,13 +154,13 @@ namespace xarm_control
 	}
 	std::vector<double> xarm_control::readJointsPositions(std::vector<std::string> joint_names)
 	{
-		//dummy return
+		// dummy return
 		std::vector<double> joint_positions;
 		joint_positions.resize(joint_names.size());
 		for (int i = 0; i < joint_positions.size(); i++)
 		{
 			joint_positions[i] = 0;
-		}	
+		}
 		return joint_positions;
 		int res;
 		// std::vector<double> joint_positions;
