@@ -60,6 +60,7 @@ namespace xarm_control
 			throw std::exception();
 		}
 
+		RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Opening device at path: %s\n", cur_dev->path);
 		handle = hid_open_path(cur_dev->path);
 
 		if (!handle)
