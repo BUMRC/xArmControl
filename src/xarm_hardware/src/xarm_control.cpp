@@ -14,63 +14,8 @@ using std::string;
 namespace xarm_control
 
 {
-	xarm_control::xarm_control()
+	XArmControl::XArmControl()
 	{
-		connect();
-	}
-
-	void xarm_control::connect()
-	{
-		// Initialize the hidapi library
-		RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Initializing hidapi library \n");
-		if (hid_init())
-		{
-			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Failed to initialize hidapi library \n");
-			return;
-		}
-
-		const unsigned short XARM_VENDOR_ID = 0x483;  // Example vendor ID
-		const unsigned short XARM_PRODUCT_ID = 0x5750; // Example product ID
-
-		int found = 0;
-		printDeviceInformation();
-		devs = hid_enumerate(0x0, 0x0);
-		cur_dev = devs;
-		// log info from cur_dev
-
-		while (cur_dev)
-		{
-
-			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device path: %s\n", cur_dev->path);
-			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device vendor ID: %hx\n", cur_dev->vendor_id);
-			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device product ID: %hx\n", cur_dev->product_id);
-
-			if (cur_dev->vendor_id == XARM_VENDOR_ID && cur_dev->product_id == XARM_PRODUCT_ID)
-			{
-
-				RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "xArm found \n");
-				found = 1;
-				break;
-			}
-			cur_dev = cur_dev->next;
-		}
-		if (found == 0)
-		{
-			RCLCPP_ERROR(rclcpp::get_logger("XArmSystemHardware"), "xArm not found, make sure it is power on \n");
-			throw std::exception();
-		}
-
-		RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Opening device at path: %s\n", cur_dev->path);
-		handle = hid_open_path(cur_dev->path);
-
-		if (!handle)
-		{
-			RCLCPP_ERROR(rclcpp::get_logger("XArmSystemHardware"), "unable to open device\n");
-			throw std::exception();
-		}
-		RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device opened \n");
-		hid_free_enumeration(devs);
-
 		// Dictionary of joint_names to joint_id
 		joint_name_map.insert(std::make_pair("xarm_2_joint", 2));
 		joint_name_map.insert(std::make_pair("xarm_3_joint", 3));
@@ -104,25 +49,63 @@ namespace xarm_control
 		matrix_unit_rad[5][1] = 845;
 	}
 
-	xarm_control::~xarm_control()
+	void XArmControl::connect()
 	{
-		return;
-		hid_close(handle);
+		if (is_connected)
+		{
+			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device already connected");
+			return;
+		}
+		// Initialize the hidapi library
+		RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Initializing hidapi library");
+		if (hid_init() != 0)
+		{
+			RCLCPP_ERROR(rclcpp::get_logger("XArmSystemHardware"), "Failed to initialize hidapi library");
+			return;
+		}
 
-		/* Free static HIDAPI objects. */
-		hid_exit();
+		const unsigned short XARM_VENDOR_ID = 0x0483;  // Example vendor ID
+		const unsigned short XARM_PRODUCT_ID = 0x5750; // Example product ID
+
+		// Enumerate and print all HID devices for debugging
+		struct hid_device_info *devs, *cur_dev;
+		devs = hid_enumerate(0x0, 0x0);
+		cur_dev = devs;
+		while (cur_dev)
+		{
+			RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"),
+						"Device Found\n  VID: %04hx\n  PID: %04hx\n  Path: %s\n  Serial Number: %ls\n  Manufacturer: %ls\n  Product: %ls",
+						cur_dev->vendor_id, cur_dev->product_id, cur_dev->path,
+						cur_dev->serial_number, cur_dev->manufacturer_string, cur_dev->product_string);
+			cur_dev = cur_dev->next;
+		}
+		handle = hid_open(XARM_VENDOR_ID, XARM_PRODUCT_ID, NULL);
+
+		if (!handle)
+		{
+			RCLCPP_ERROR(rclcpp::get_logger("XArmSystemHardware"), "Unable to open device. Error: %ls", hid_error(NULL));
+			hid_free_enumeration(devs);
+			throw std::runtime_error("Failed to open xArm device");
+		}
+		is_connected = true;
+		RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Device opened successfully");
+		hid_free_enumeration(devs);
 	}
 
-	void xarm_control::disconnect()
+	XArmControl::~XArmControl()
 	{
-		return;
-		hid_close(handle);
-		hid_exit();
+		disconnect();
 	}
 
-	void xarm_control::printDeviceInformation()
+	void XArmControl::disconnect()
 	{
-		return;
+		hid_close(handle);
+		hid_exit();
+		is_connected = false;
+	}
+
+	void XArmControl::printDeviceInformation()
+	{
 		devs = hid_enumerate(0x0, 0x0);
 		cur_dev = devs;
 		while (cur_dev)
@@ -139,35 +122,31 @@ namespace xarm_control
 		}
 	}
 
-	int xarm_control::convertRadToUnit(std::string joint_name, double rad)
+	int XArmControl::convertRadToUnit(std::string joint_name, double rad)
 	{
-		return 0;
 		int unit;
 		double m = (matrix_unit_transform[joint_name][0][1] - matrix_unit_transform[joint_name][0][0]) / (PI);
 		double b = matrix_unit_transform[joint_name][0][1] - (m * PI / 2);
-		unit = (m * rad) + b;
+		unit = (int)((m * rad) + b);
 		return unit;
 	}
 
-	double xarm_control::convertUnitToRad(std::string joint_name, int unit)
+	double XArmControl::convertUnitToRad(std::string joint_name, int unit)
 	{
-		return 0;
 		double rad;
 		double m = (PI) / (matrix_unit_transform[joint_name][0][1] - matrix_unit_transform[joint_name][0][0]);
 		double b = (PI / 2) - (m * matrix_unit_transform[joint_name][0][1]);
 		rad = (m * unit) + b;
 		return rad;
 	}
-	std::vector<double> xarm_control::readJointsPositions(std::vector<std::string> joint_names)
+	std::vector<double> XArmControl::readJointsPositions(std::vector<std::string> joint_names)
 	{
-		// dummy return
-		std::vector<double> joint_positions;
-		joint_positions.resize(joint_names.size());
-		for (int i = 0; i < joint_positions.size(); i++)
+		if (!is_connected)
 		{
-			joint_positions[i] = 0;
+			RCLCPP_ERROR(rclcpp::get_logger("XArmSystemHardware"), "Device not connected");
+			return {};
 		}
-		return joint_positions;
+		std::vector<double> joint_positions;
 		int res;
 		// std::vector<double> joint_positions;
 		unsigned char buf[65];
@@ -193,15 +172,18 @@ namespace xarm_control
 		}
 
 		res = 0;
+
 		while (res == 0)
 		{
 			res = hid_read(handle, buf, sizeof(buf));
 			if (res == 0)
+			{
 				printf("waiting...\n");
+			}
 			if (res < 0)
 				printf("Unable to read()\n");
 
-			// sleep for 500ms
+			//  sleep for 500ms
 			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		}
 
@@ -220,9 +202,14 @@ namespace xarm_control
 		return joint_positions;
 	}
 
-	void xarm_control::setJointPosition(std::string joint_name, double position_rad, int time = 1000)
+	void XArmControl::setJointPosition(std::string joint_name, double position_rad, int time = 100)
 	{
-		return;
+		if (!is_connected)
+		{
+			RCLCPP_ERROR(rclcpp::get_logger("XArmSystemHardware"), "Device not connected");
+			return;
+		}
+
 		unsigned char buf[65];
 		unsigned char t_lsb, t_msb, p_lsb, p_msb;
 		int res;

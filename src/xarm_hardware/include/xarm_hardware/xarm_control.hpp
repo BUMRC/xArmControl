@@ -5,13 +5,14 @@
 #include <sstream>
 #include <map>
 
+
 namespace xarm_control
 {
-	class xarm_control
+	class XArmControl
 	{
 	public:
-		xarm_control();
-		~xarm_control();
+		XArmControl();
+		~XArmControl();
 
 		std::vector<double> readJointsPositions(std::vector<std::string> joint_names);
 		void setJointPosition(std::string joint_name, double position_rad, int time);
@@ -27,6 +28,8 @@ namespace xarm_control
 		int matrix_unit_rad[6][2];
 		std::map<std::string, int> joint_name_map;
 		std::map<std::string, int[1][2]> matrix_unit_transform;
+
+		bool is_connected;
 	};
 }
 
