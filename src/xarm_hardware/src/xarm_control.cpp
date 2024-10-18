@@ -12,10 +12,10 @@
 
 using std::string;
 namespace xarm_control
-
 {
 	XArmControl::XArmControl()
 	{
+		is_connected = false;
 		// Dictionary of joint_names to joint_id
 		joint_name_map.insert(std::make_pair("xarm_2_joint", 2));
 		joint_name_map.insert(std::make_pair("xarm_3_joint", 3));
@@ -83,7 +83,7 @@ namespace xarm_control
 
 		if (!handle)
 		{
-			RCLCPP_ERROR(rclcpp::get_logger("XArmSystemHardware"), "Unable to open device. Error: %ls", hid_error(NULL));
+			RCLCPP_ERROR(rclcpp::get_logger("XArmSystemHardware"), "Unable to open device. Error: %ls", hid_error(handle));
 			hid_free_enumeration(devs);
 			throw std::runtime_error("Failed to open xArm device");
 		}
