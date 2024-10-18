@@ -8,8 +8,9 @@
             <!-- By default, set up controllers for simulation. This won't work on real hardware -->
             <plugin>xarm_hardware/XArmSystemHardware</plugin>
             <parameters>$(find xarm_description)/config/my_controllers.yaml</parameters>
-            <param name="example_param_hw_start_duration_sec">2.0</param>
-            <param name="example_param_hw_stop_duration_sec">3.0</param>
+            <param name="kp">0.05</param>
+            <param name="ki">0.0</param>
+            <param name="kd">0.0</param>
         </hardware>
             <joint name="xarm_6_joint">
                 <command_interface name="position"/>

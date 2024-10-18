@@ -21,3 +21,10 @@ cd /src/launch
 ros2 launch roverArmSim gazebo.launch.py
 ```
 
+
+test cmd:
+```
+"xarm_6_joint", "xarm_5_joint", "xarm_4_joint", "xarm_3_joint", "xarm_2_joint"
+ros2 topic pub --once /xarm_controller/joint_trajectory trajectory_msgs/msg/JointTrajectory "{joint_names: ['xarm_6_joint', 'xarm_5_joint', 'xarm_4_joint', 'xarm_3_joint', 'xarm_2_joint'], points: [{positions: [0.0, 1.0, 1.0, 1.0, 1.0], time_from_start: {sec: 0, nanosec: 0}}]}"
+
+```

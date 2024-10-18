@@ -6,7 +6,12 @@
 #include <thread>
 #include <chrono>
 #include "rclcpp/rclcpp.hpp"
+
+
+
 #include "xarm_hardware/xarm_control.hpp"
+
+
 #define MAX_STR 255
 #define PI 3.14159265359
 
@@ -139,68 +144,94 @@ namespace xarm_control
 		rad = (m * unit) + b;
 		return rad;
 	}
-	std::vector<double> XArmControl::readJointsPositions(std::vector<std::string> joint_names)
-	{
-		if (!is_connected)
-		{
-			RCLCPP_ERROR(rclcpp::get_logger("XArmSystemHardware"), "Device not connected");
-			return {};
-		}
-		std::vector<double> joint_positions;
-		int res;
-		// std::vector<double> joint_positions;
-		unsigned char buf[65];
+	    double XArmControl::getCurrentJointRad(std::string joint_name)
+    {
+        std::lock_guard<std::mutex> lock(filter_mutex_);
+        if (filtered_positions_.find(joint_name) != filtered_positions_.end())
+        {
+            return filtered_positions_[joint_name];
+        }
+        else
+        {
+            return 0.0; // Default value if not found
+        }
+    }
 
-		joint_positions.resize(joint_names.size());
-		buf[0] = 0x55;
-		buf[1] = 0x55;
-		buf[2] = 9;
-		buf[3] = 21;
-		buf[4] = 6;
-		buf[5] = 1;
-		buf[6] = 2;
-		buf[7] = 3;
-		buf[8] = 4;
-		buf[9] = 5;
-		buf[10] = 6;
-		res = hid_write(handle, buf, 17);
+    std::vector<double> XArmControl::readJointsPositions(std::vector<std::string> joint_names)
+    {
+        if (!is_connected)
+        {
+            RCLCPP_ERROR(rclcpp::get_logger("XArmSystemHardware"), "Device not connected");
+            return {};
+        }
+        std::vector<double> joint_positions;
+        int res;
+        unsigned char buf[65];
 
-		if (res < 0)
-		{
-			printf("Unable to write()\n");
-			printf("Error: %ls\n", hid_error(handle));
-		}
+        joint_positions.resize(joint_names.size());
+        buf[0] = 0x55;
+        buf[1] = 0x55;
+        buf[2] = 9;
+        buf[3] = 21;
+        buf[4] = 6;
+        buf[5] = 1;
+        buf[6] = 2;
+        buf[7] = 3;
+        buf[8] = 4;
+        buf[9] = 5;
+        buf[10] = 6;
+        res = hid_write(handle, buf, 17);
 
-		res = 0;
+        if (res < 0)
+        {
+            printf("Unable to write()\n");
+            printf("Error: %ls\n", hid_error(handle));
+        }
 
-		while (res == 0)
-		{
-			res = hid_read(handle, buf, sizeof(buf));
-			if (res == 0)
-			{
-				printf("waiting...\n");
-			}
-			if (res < 0)
-				printf("Unable to read()\n");
+        res = 0;
 
-			//  sleep for 500ms
-			std::this_thread::sleep_for(std::chrono::milliseconds(500));
-		}
+        while (res == 0)
+        {
+            res = hid_read(handle, buf, sizeof(buf));
+            if (res == 0)
+            {
+                printf("waiting...\n");
+            }
+            if (res < 0)
+                printf("Unable to read()\n");
 
-		int id, p_lsb, p_msb, pos, unit, joint_id;
-		for (int i = 0; i < joint_names.size(); i++)
-		{
-			joint_id = joint_name_map[joint_names[i]];
-			id = buf[2 + 3 * joint_id];
-			p_lsb = buf[2 + 3 * joint_id + 1];
-			p_msb = buf[2 + 3 * joint_id + 2];
-			unit = (p_msb << 8) + p_lsb;
-			joint_positions[i] = convertUnitToRad(joint_names[i], unit);
-			// printf("servo %d in joint_position %f \n", id, joint_positions[i]);
-		}
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
 
-		return joint_positions;
-	}
+        int id, p_lsb, p_msb, pos, unit, joint_id;
+        for (int i = 0; i < joint_names.size(); i++)
+        {
+            joint_id = joint_name_map[joint_names[i]];
+            id = buf[2 + 3 * joint_id];
+            p_lsb = buf[2 + 3 * joint_id + 1];
+            p_msb = buf[2 + 3 * joint_id + 2];
+            unit = (p_msb << 8) + p_lsb;
+            double rad = convertUnitToRad(joint_names[i], unit);
+
+            // Apply low-pass filter
+            std::lock_guard<std::mutex> lock(filter_mutex_);
+            if (filtered_positions_.find(joint_names[i]) == filtered_positions_.end())
+            {
+                filtered_positions_[joint_names[i]] = rad;
+            }
+            else
+            {
+                filtered_positions_[joint_names[i]] = alpha_ * rad + (1 - alpha_) * filtered_positions_[joint_names[i]];
+            }
+
+            joint_positions[i] = filtered_positions_[joint_names[i]];
+        }
+
+		
+
+        return joint_positions;
+    }
+
 
 	void XArmControl::setJointPosition(std::string joint_name, double position_rad, int time = 100)
 	{
@@ -231,13 +262,16 @@ namespace xarm_control
 		buf[8] = p_lsb;
 		buf[9] = p_msb;
 
-		res = hid_write(handle, buf, 17);
-
-		if (res < 0)
-		{
-			printf("Unable to write()\n");
-			printf("Error: %ls\n", hid_error(handle));
-		}
-	}
+        // Implement asynchronous write
+        std::async(std::launch::async, [this, buf]()
+        {
+            int res = hid_write(handle, buf, 17);
+            if (res < 0)
+            {
+                printf("Unable to write()\n");
+                printf("Error: %ls\n", hid_error(handle));
+            }
+        });
+    }
 
 }

@@ -18,14 +18,24 @@ namespace xarm_hardware
         double pos = 0.0;            // radians
         double vel = 0.0;            // rad/s
 
-        Joint(const std::string &joint_name)
+        double kp = 0.05;             // proportional gain
+        double ki = 0.0;             // integral gain
+        double kd = 0.0;             // derivative gain
+        double integral = 0.0;       // integral term
+        double previous_error = 0.0; // previous error
+
+
+        Joint(const std::string &joint_name, double kp = 0.05, double ki = 0.0, double kd = 0.0)
         {
             setup(joint_name);
         }
 
-        void setup(const std::string &joint_name)
+        void setup(const std::string &joint_name, double kp = 0.05, double ki = 0.0, double kd = 0.0)
         {
             name = joint_name;
+            this->kp = kp;
+            this->ki = ki;
+            this->kd = kd;
         }
     };
 }

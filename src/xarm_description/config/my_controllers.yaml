@@ -25,6 +25,13 @@ xarm_controller:
     state_interfaces:
       - position
       - velocity
+    gains:
+      xarm_6_joint: {p: 50.0, i: 0.000, d: 0.00, i_clamp: 1.0}
+      xarm_5_joint: {p: 50.0, i: 0.000, d: 0.00, i_clamp: 1.0}
+      xarm_4_joint: {p: 50.0, i: 0.000, d: 0.00, i_clamp: 1.0}
+      xarm_3_joint: {p: 50.0, i: 0.000, d: 0.00, i_clamp: 1.0}
+      xarm_2_joint: {p: 50.0, i: 0.000, d: 0.00, i_clamp: 1.0}
+    
 
    # state_publish_rate: 100.0 # Defaults to 50
    #  action_monitor_rate: 100.0 # Defaults to 20
