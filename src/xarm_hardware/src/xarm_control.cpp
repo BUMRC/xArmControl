@@ -181,7 +181,8 @@ namespace xarm_control
         buf[9] = 5;
         buf[10] = 6;
         res = hid_write(handle, buf, 17);
-
+		buf[0] = 0;
+		buf[1] = 0;
         if (res < 0)
         {
             printf("Unable to write()\n");
@@ -199,8 +200,10 @@ namespace xarm_control
             }
             if (res < 0)
                 printf("Unable to read()\n");
+			// RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Reading positions: %f, %f, %f, %f, %f", positions[0], positions[1], positions[2], positions[3], positions[4]);
+			// read timing and log it
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));// check buffer instead of waiting
         }
 
         int id, p_lsb, p_msb, pos, unit, joint_id;
@@ -233,13 +236,22 @@ namespace xarm_control
     }
 
 
-	void XArmControl::setJointPosition(std::string joint_name, double position_rad, int time = 100)
+	void XArmControl::setJointPosition(std::string joint_name, double position_rad, int time = 50)
 	{
 		if (!is_connected)
 		{
 			RCLCPP_ERROR(rclcpp::get_logger("XArmSystemHardware"), "Device not connected");
 			return;
 		}
+
+		double target_vel = 2.5; // rad/s
+		double dy = position_rad - getCurrentJointRad(joint_name);
+		if (dy < 0)
+		{
+			target_vel = -target_vel;
+		}
+		int time_ = int(dy/target_vel * 1000); // ms
+		time = time_; // ms
 
 		unsigned char buf[65];
 		unsigned char t_lsb, t_msb, p_lsb, p_msb;
@@ -265,6 +277,7 @@ namespace xarm_control
         // Implement asynchronous write
         std::async(std::launch::async, [this, buf]()
         {
+			// kalman filter for positon 
             int res = hid_write(handle, buf, 17);
             if (res < 0)
             {

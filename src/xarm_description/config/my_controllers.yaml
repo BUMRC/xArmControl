@@ -1,7 +1,7 @@
 controller_manager:
   ros__parameters:
-    update_rate: 1000  # Increase from 100 to 250 or higher
-    use_sim_time: true
+    update_rate: 100  # Increase from 100 to 250 or higher
+    use_sim_time: false
 
     xarm_controller:
       type: joint_trajectory_controller/JointTrajectoryController
@@ -26,11 +26,11 @@ xarm_controller:
       - position
       - velocity
     gains:
-      xarm_6_joint: {p: 50.0, i: 0.000, d: 0.00, i_clamp: 1.0}
-      xarm_5_joint: {p: 50.0, i: 0.000, d: 0.00, i_clamp: 1.0}
-      xarm_4_joint: {p: 50.0, i: 0.000, d: 0.00, i_clamp: 1.0}
-      xarm_3_joint: {p: 50.0, i: 0.000, d: 0.00, i_clamp: 1.0}
-      xarm_2_joint: {p: 50.0, i: 0.000, d: 0.00, i_clamp: 1.0}
+      xarm_6_joint: {p: 10000.0, i: 0.000, d: 0.00, i_clamp_min: 0.0, i_clamp_max: 0.0}
+      xarm_5_joint: {p: 10000.0, i: 0.000, d: 0.00, i_clamp_min: 0.0, i_clamp_max: 0.0}
+      xarm_4_joint: {p: 10000.0, i: 0.000, d: 0.00, i_clamp_min: 0.0, i_clamp_max: 0.0}
+      xarm_3_joint: {p: 10000.0, i: 0.000, d: 0.00, i_clamp_min: 0.0, i_clamp_max: 0.0}
+      xarm_2_joint: {p: 10000.0, i: 0.000, d: 0.00, i_clamp_min: 0.0, i_clamp_max: 0.0}
     
 
    # state_publish_rate: 100.0 # Defaults to 50

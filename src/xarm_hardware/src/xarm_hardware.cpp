@@ -181,12 +181,15 @@ namespace xarm_hardware
         const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
     {
         std::vector<std::string> joint_names = {"xarm_6_joint", "xarm_5_joint", "xarm_4_joint", "xarm_3_joint", "xarm_2_joint"};
+
         std::vector<double> positions = {joints[0].cmd, joints[1].cmd, joints[2].cmd, joints[3].cmd, joints[4].cmd};
 
         // RCLCPP_INFO(rclcpp::get_logger("XArmSystemHardware"), "Writing positions: %f, %f, %f, %f, %f", positions[0], positions[1], positions[2], positions[3], positions[4]);
+
+
         for (auto i = 0u; i < joints.size(); i++)
         {
-            xarm_control_.setJointPosition(joints[i].name, joints[i].cmd, 1000);
+            xarm_control_.setJointPosition(joints[i].name, joints[i].cmd, 20);
         }
 
         return hardware_interface::return_type::OK;
