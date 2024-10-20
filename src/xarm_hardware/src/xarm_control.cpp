@@ -277,7 +277,7 @@ namespace xarm_control
         // Implement asynchronous write
         std::async(std::launch::async, [this, buf]()
         {
-			// kalman filter for positon 
+			// add kalman filter for positon? 
             int res = hid_write(handle, buf, 17);
             if (res < 0)
             {

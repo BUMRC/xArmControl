@@ -36,12 +36,17 @@ namespace xarm_hardware
         {
             return hardware_interface::CallbackReturn::ERROR;
         }
+
+        double kp = 0.05;
+        double ki = 0.0;
+        double kd = 0.0;
+
         joints = {
-            Joint("xarm_6_joint"),
-            Joint("xarm_5_joint"),
-            Joint("xarm_4_joint"),
-            Joint("xarm_3_joint"),
-            Joint("xarm_2_joint"),
+            Joint("xarm_6_joint", kp, ki, kd),
+            Joint("xarm_5_joint", kp, ki, kd),
+            Joint("xarm_4_joint", kp, ki, kd),
+            Joint("xarm_3_joint", kp, ki, kd),
+            Joint("xarm_2_joint", kp, ki, kd),
         };
         // todo: setup config parameters
         // cfg_.joint_names = something; // resize this
@@ -178,7 +183,7 @@ namespace xarm_hardware
     }
 
     hardware_interface::return_type xarm_hardware ::XArmSystemHardware::write(
-        const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
+        const rclcpp::Time & /*time*/, const rclcpp::Duration & period)
     {
         std::vector<std::string> joint_names = {"xarm_6_joint", "xarm_5_joint", "xarm_4_joint", "xarm_3_joint", "xarm_2_joint"};
 
@@ -189,7 +194,7 @@ namespace xarm_hardware
 
         for (auto i = 0u; i < joints.size(); i++)
         {
-            xarm_control_.setJointPosition(joints[i].name, joints[i].cmd, 20);
+            xarm_control_.setJointPosition(joints[i].name, joints[i].calculateTarget(period.seconds()), 20);
         }
 
         return hardware_interface::return_type::OK;

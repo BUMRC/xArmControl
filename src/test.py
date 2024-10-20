@@ -54,6 +54,7 @@ class XArm:
         """
         Read the position of all 6 servos
         """
+        
         self.dev.write([0x55, 0x55, 9, 21, 6, 1, 2, 3, 4, 5, 6])
         ret = self.dev.read()
         
@@ -109,22 +110,29 @@ def demo():
 
     # Move to the right
     arm.move_all([-1, 0, 0, 0, 0, 0])
+    print(arm.read_pos())
     time.sleep(2)
 
     # Move to the left
     arm.move_all([1, 0, 0, 0, 0, 0])
+    st = time.time()
+    print(arm.read_pos())
+    print(time.time() - st)
     time.sleep(2)
 
     # Move to default position
     arm.move_all([0, 0, 0, 0, 0, 0])
+    print(arm.read_pos())
     time.sleep(2)
 
     # Open gripper
     arm.move_all([0, 0, 0, 0, 0, -1])
+    print(arm.read_pos())
     time.sleep(2)
 
     # Close gripper
     arm.move_all([0, 0, 0, 0, 0, 1])
+    print(arm.read_pos())
     time.sleep(2)
 
     # Put the arm back in a resting position
