@@ -50,7 +50,8 @@ namespace xarm_hardware
 
         double calculateTarget(double dt)
         {
-            return pid.calculate(cmd, pos, dt);
+            return cmd;
+            //return pid.calculate(cmd, pos, dt);
         }
     };
 }
